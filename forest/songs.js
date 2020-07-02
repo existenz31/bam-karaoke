@@ -5,7 +5,7 @@ const { Op } = require('sequelize');
 collection('songs', {
   actions: [],
   fields: [
-    {
+    { /* Filterable Smart Field */
     isFilterable: true,
     field: 'genresStringArray',
     type: 'String',
@@ -23,7 +23,7 @@ collection('songs', {
         });
     },
   },
-  {
+  { /* Searchable Smart Field */
     field: 'genresStringArray2',
     type: 'String',
     get: (song) => {
@@ -54,13 +54,13 @@ collection('songs', {
       return query;
     }
   },
-  {
+  { /* Filerable Smart Relationship */
     isFilterable: true,
     field: 'fakeGenre',
     type: 'String',
     reference: 'genres.id',
     get: (song) => {
-      return null;
+      return null; // Just a fake attribute
     },
   },
 ],
