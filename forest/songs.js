@@ -66,15 +66,3 @@ collection('songs', {
 ],
   segments: [],
 });
-
-// collection('songs', {
-//   actions: [],
-//   fields: [
-//     {
-//     field: 'genresArray',
-//     type: '[String]',
-//     reference: 'genres.id'
-//     }
-//   ],
-//   segments: [],
-// });
