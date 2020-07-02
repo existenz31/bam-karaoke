@@ -1,0 +1,18 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sebastienp_bam_karaoke
+    environment:
+      - APPLICATION_PORT=3310
+      - DATABASE_URL=postgres://forest:forest2020@host.docker.internal:5432/bam_karaoke
+      - DATABASE_SCHEMA=public
+      - DATABASE_SSL=false
+      - FOREST_AUTH_SECRET=7d064529372cc07e7ef6fe1222c0254919a96b7f5986437e9307df41d82d09eaafe4830f3c0a4e47a49bdc1c64532937
+      - FOREST_ENV_SECRET=eb41e24297ddb56672091918010b1938c1503d7efdcafb5f7ec06c9cd4793ef0
+    ports:
+      - "3310:3310"
+    volumes:
+      - ./:/usr/src/app
