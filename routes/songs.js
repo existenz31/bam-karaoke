@@ -51,33 +51,26 @@ function getBelongsToIncludes() {
     return include;
 }
 
-function replaceSmartFieldsCondition(queryOptions) {
-  console.log(queryOptions);
-  var where = queryOptions.where;
-  var genresIncluded = false;
-  // Filter with one level 
-  for(let lvl0 in where[Sequelize.Op.and]) {
-    let genreClause = where[Sequelize.Op.and][lvl0].genresStringArray
-    if (genreClause) {
-      where[Sequelize.Op.and][lvl0] = {'$genres.name$': genreClause};
-      if (!genresIncluded) {
-        addIncludeGenres(queryOptions);
-        genresIncluded = true;
-      }
-    }
+function replaceSmartFieldsCondition(json, queryOptions) {
+  if (!json) return;
+  // traverse symbols
+  for(let lvl of Object.getOwnPropertySymbols(json) ) {
+    replaceSmartFieldsCondition(json[lvl], queryOptions);
   }
-  // Filter with two levels
-  if (!where[Sequelize.Op.and][0]) return;
-  for(let lvl1 of Object.getOwnPropertySymbols(where[Sequelize.Op.and][0]) ) {
-    for(let lvl2 in where[Sequelize.Op.and][0][lvl1]) {
-      let genreClause = where[Sequelize.Op.and][0][lvl1][lvl2].genresStringArray
-      if (genreClause) {   
-        where[Sequelize.Op.and][0][lvl1][lvl2] = {'$genres.name$': genreClause};
-        if (!genresIncluded) {
-          addIncludeGenres(queryOptions);
-          genresIncluded = true;
-        }  
+  // traverse normal Json object
+  for (var i in json) {
+    var item = json[i];
+    if (item !== null && typeof(item)=="object") {
+      if(Object.keys(item).some(function(k){ return ~k.indexOf("$fakeGenre.") })){
+        // it has fakeGenre.* property
+        var oldKey = Object.keys(item)[0];
+        var newKey = oldKey.replace('$fakeGenre.', '$genres.');
+        var val = item['$fakeGenre.name$'];
+        delete item[oldKey]; // Get rid of the previous Smart Field condition
+        item[newKey] = val; // Add the new and right condition
+        addIncludeGenres(queryOptions);
       }
+      replaceSmartFieldsCondition(item, queryOptions);
     }
   }
 }
@@ -98,7 +91,7 @@ function getQueryOptions(defaultQueryOptions, where, search) {
   options.where = where;
   options.subQuery = false;// Important here ==> https://github.com/sequelize/sequelize/issues/8802
 
-  replaceSmartFieldsCondition(options);
+  replaceSmartFieldsCondition(options.where, options);
 
   // Add the search in the global Where (if present)
   if (search) {

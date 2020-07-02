@@ -53,7 +53,7 @@ collection('songs', {
       query.subQuery = false; // do not create sub queries to avoid where misconfiguration (nested SELECT on 'SONGS' not having the 'GENRES' include)
       return query;
     }
-  },
+  }
 ],
   segments: [],
 });
