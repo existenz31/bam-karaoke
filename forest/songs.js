@@ -54,7 +54,7 @@ collection('songs', {
       return query;
     }
   },
-  { /* Filerable Smart Relationship */
+  { /* Filterable Smart Relationship */
     isFilterable: true,
     field: 'fakeGenre',
     type: 'String',
