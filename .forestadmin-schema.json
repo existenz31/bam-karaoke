@@ -649,13 +649,12 @@
       "enums": null,
       "integration": null,
       "isFilterable": true,
-      "isReadOnly": false,
+      "isReadOnly": true,
       "isRequired": false,
-      "isSortable": true,
-      "isVirtual": false,
-      "reference": "genres.genreIdKey",
+      "isSortable": false,
+      "isVirtual": true,
+      "reference": "genres.id",
       "inverseOf": null,
-      "relationship": "BelongsTo",
       "validations": []
     }, {
       "field": "genres",

@@ -50,13 +50,6 @@ module.exports = (sequelize, DataTypes) => {
       },
       as: 'artist',
     });
-    Songs.belongsTo(models.genres, {
-      foreignKey: {
-        name: 'genreIdKey',
-        field: 'id',
-      },
-      as: 'fakeGenre',
-    });
     Songs.belongsTo(models.languages, {
       foreignKey: {
         name: 'languageIdKey',

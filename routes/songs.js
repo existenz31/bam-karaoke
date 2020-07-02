@@ -31,8 +31,7 @@ function addIncludeGenres(queryOptions) {
     model: genres,
     attributes: [] , // This seems not enough ==> Select "genres -> songsGenresGenres" is generated from the include
     through: { attributes: [''] }, 
-    required: true,
-    //where: {name: genreClause},
+    required: false,
   });
 }
 
@@ -51,37 +50,47 @@ function getBelongsToIncludes() {
     return include;
 }
 
-function replaceSmartFieldsCondition(json, queryOptions) {
-  if (!json) return;
-  // traverse symbols
-  for(let lvl of Object.getOwnPropertySymbols(json) ) {
-    replaceSmartFieldsCondition(json[lvl], queryOptions);
+function replaceKeyCondition(condition, convertCondition) {
+  var oldKey = Object.keys(condition)[0];
+  var newKey = convertCondition(oldKey);
+  var val = Object.values(condition)[0];
+  delete condition[oldKey]; // Get rid of the previous Smart Field condition
+  condition[newKey] = val; // Add the new and right condition
+}
+
+function replaceSmartFieldsCondition(jsObj, queryOptions) {
+  if (!jsObj) return;
+  // traverse JS Symbols
+  for(let lvl of Object.getOwnPropertySymbols(jsObj) ) {
+    replaceSmartFieldsCondition(jsObj[lvl], queryOptions);
   }
-  // traverse normal Json object
-  for (var i in json) {
-    var item = json[i];
+  // traverse normal JS Object
+  for (var i in jsObj) {
+    var item = jsObj;
     if (item !== null && typeof(item)=="object") {
-      if(Object.keys(item).some(function(k){ return ~k.indexOf("$fakeGenre.") })){
-        // it has fakeGenre.* property
-        var oldKey = Object.keys(item)[0];
-        var newKey = oldKey.replace('$fakeGenre.', '$genres.');
-        var val = item['$fakeGenre.name$'];
-        delete item[oldKey]; // Get rid of the previous Smart Field condition
-        item[newKey] = val; // Add the new and right condition
-        addIncludeGenres(queryOptions);
-      }
-      replaceSmartFieldsCondition(item, queryOptions);
+      replaceSmartFieldsCondition(jsObj[i], queryOptions);
+    }
+  }
+
+  var item = jsObj;
+  if (item !== null && typeof(item)=="object") {
+    if(Object.keys(item).some(function(k){ return ~k.indexOf("$fakeGenre.") })){
+      // it has fakeGenre.* property
+      replaceKeyCondition(item, (oldKey) => oldKey.replace('$fakeGenre.', '$genres.'));
+      addIncludeGenres(queryOptions);
+    }
+    if(item.hasOwnProperty('genresStringArray')){
+      // it has fakeGenre.* property
+      replaceKeyCondition(item, (oldKey) => '$genres.name$');
+      addIncludeGenres(queryOptions);
     }
   }
 }
 
 function getFiltersParser(request)  {
-  const sequelizeOptions = {
-    sequelize: Sequelize,
-  };
+  const sequelizeOptions = { sequelize: Sequelize };
   const timezone = request.query.timezone;
   const fields = {fields: request.query.fields['songs'].split(',')};
-
   return  new FiltersParser(fields, timezone, sequelizeOptions);
 }
 
